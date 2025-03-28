@@ -55,7 +55,10 @@
 #include "sensor_msgs/point_cloud2_iterator.hpp"
 #include "visualization_msgs/msg/marker.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
+#include "nav_msgs/msg/odometry.hpp"
 #include "std_srvs/srv/empty.hpp"
+
+#include <eigen3/Eigen/Dense>
 
 #include "obstacle_detector/msg/obstacles.hpp"
 #include "obstacle_detector/msg/circle_obstacle.hpp"
@@ -79,9 +82,11 @@ private:
   void scanCallback(const sensor_msgs::msg::LaserScan& scan_msg);
   void pclCallback(const sensor_msgs::msg::PointCloud& pcl_msg);
   void pcl2Callback(sensor_msgs::msg::PointCloud2::SharedPtr pcl_msg);
+  void localCallback(const nav_msgs::msg::Odometry& local_msg);
 
   void initialize() { std_srvs::srv::Empty empt; updateParamsUtil(); }
 
+  Point distortionCorrection(sensor_msgs::msg::LaserScan, double*, double, double);
   void processPoints();
   void groupPoints();
   void transformObstacles();
@@ -104,6 +109,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud>::SharedPtr pcl_sub_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pcl2_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr local_filter_sub;
   rclcpp::Publisher<obstacle_detector::msg::Obstacles>::SharedPtr obstacles_pub_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr obstacles_vis_pub_;
   rclcpp::Service<std_srvs::srv::Empty>::SharedPtr params_srv_;
@@ -111,6 +117,8 @@ private:
   rclcpp::Time stamp_;
   rclcpp::Time time_last_marker_published_;
   int num_active_markers_ = 0;
+  double twist[3]={0.0}; // 0: vx, 1: vy, 2: w
+  double prev_twist[3]={0.0};
   std::string base_frame_id_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;

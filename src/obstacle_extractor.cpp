@@ -128,6 +128,9 @@ void ObstacleExtractor::updateParamsUtil(){
         pcl2_sub_ = nh_->create_subscription<sensor_msgs::msg::PointCloud2>(
             "pcl2", 10, std::bind(&ObstacleExtractor::pcl2Callback, this, std::placeholders::_1));
       }
+      local_filter_sub = nh_->create_subscription<nav_msgs::msg::Odometry>(
+        "local_filter", 10, std::bind(&ObstacleExtractor::localCallback, this, std::placeholders::_1));
+
       obstacles_pub_ = nh_->create_publisher<obstacle_detector::msg::Obstacles>("raw_obstacles", 10);
       obstacles_vis_pub_ = nh_->create_publisher<visualization_msgs::msg::MarkerArray>("raw_obstacles_visualization", 10);
     }
@@ -155,7 +158,7 @@ void ObstacleExtractor::scanCallback(const sensor_msgs::msg::LaserScan& scan_msg
 
   for (const float r : scan_msg.ranges) {
     if (r >= scan_msg.range_min && r <= scan_msg.range_max)
-      input_points_.push_back(Point::fromPoolarCoords(r, phi));
+      input_points_.push_back(distortionCorrection(scan_msg, twist, r, phi));
 
     phi += scan_msg.angle_increment;
   }
@@ -204,6 +207,36 @@ void ObstacleExtractor::pcl2Callback(sensor_msgs::msg::PointCloud2::SharedPtr pc
     // "px " << point_x << ", py " << point_y << ", pz " << point_z);
   }
   processPoints();
+}
+
+void ObstacleExtractor::localCallback(const nav_msgs::msg::Odometry& local_msg){
+  twist[0]+=0.5*(local_msg.twist.twist.linear.x-prev_twist[0]);
+  twist[1]+=0.5*(local_msg.twist.twist.linear.y-prev_twist[1]);
+  twist[2]+=0.5*(local_msg.twist.twist.angular.z-prev_twist[2]);
+  prev_twist[0]=local_msg.twist.twist.linear.x;
+  prev_twist[1]=local_msg.twist.twist.linear.y;
+  prev_twist[2]=local_msg.twist.twist.angular.z;
+}
+
+Point ObstacleExtractor::distortionCorrection(sensor_msgs::msg::LaserScan scan_msg, double* twist, double r, double phi){
+    double dt=scan_msg.time_increment;
+    double c=1-abs((phi-scan_msg.angle_min)/(scan_msg.angle_max-scan_msg.angle_min));
+
+    double d_theta=c*twist[2]*dt;
+
+    Eigen::Matrix3d R;
+    R << cos(phi), sin(phi), 0, -sin(phi), cos(phi), 0, 0, 0, 1;
+
+    Eigen::Vector3d curr2prev_in_curr_frame;
+    curr2prev_in_curr_frame << (-c*twist[0]*dt), (-c*twist[1]*dt), 0;
+
+    Eigen::Vector3d prev2scan_in_prev_frame;
+    prev2scan_in_prev_frame<<(r*cos(phi)), r*sin(phi), 0;
+    
+    Eigen::Vector3d curr2scan_in_curr_frame;
+    curr2scan_in_curr_frame=curr2prev_in_curr_frame+R*prev2scan_in_prev_frame;
+    
+    return curr2scan_in_curr_frame(0), curr2scan_in_curr_frame(1);
 }
 
 void ObstacleExtractor::processPoints() {
