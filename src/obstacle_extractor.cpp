@@ -156,9 +156,12 @@ void ObstacleExtractor::scanCallback(const sensor_msgs::msg::LaserScan& scan_msg
 
   double phi = scan_msg.angle_min;
 
+  double scan_twist[3]={0.0};
+  for (int i=0;i<3;i++) scan_twist[i]=twist[i];
+
   for (const float r : scan_msg.ranges) {
     if (r >= scan_msg.range_min && r <= scan_msg.range_max)
-      input_points_.push_back(distortionCorrection(scan_msg, twist, r, phi));
+      input_points_.push_back(distortionCorrection(scan_msg, scan_twist, r, phi));
 
     phi += scan_msg.angle_increment;
   }
