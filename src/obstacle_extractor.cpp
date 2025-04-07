@@ -157,7 +157,10 @@ void ObstacleExtractor::scanCallback(const sensor_msgs::msg::LaserScan& scan_msg
   double phi = scan_msg.angle_min;
 
   double scan_twist[3]={0.0};
-  for (int i=0;i<3;i++) scan_twist[i]=twist[i];
+  for (int i=0;i<3;i++) {
+    scan_twist[i]=0.5*(local_twist[i]+prev_scan_twist[i]);
+    prev_scan_twist[i]=local_twist[i];
+  }
 
   for (const float r : scan_msg.ranges) {
     if (r >= scan_msg.range_min && r <= scan_msg.range_max)
@@ -213,12 +216,9 @@ void ObstacleExtractor::pcl2Callback(sensor_msgs::msg::PointCloud2::SharedPtr pc
 }
 
 void ObstacleExtractor::localCallback(const nav_msgs::msg::Odometry& local_msg){
-  twist[0]+=0.5*(local_msg.twist.twist.linear.x-prev_twist[0]);
-  twist[1]+=0.5*(local_msg.twist.twist.linear.y-prev_twist[1]);
-  twist[2]+=0.5*(local_msg.twist.twist.angular.z-prev_twist[2]);
-  prev_twist[0]=local_msg.twist.twist.linear.x;
-  prev_twist[1]=local_msg.twist.twist.linear.y;
-  prev_twist[2]=local_msg.twist.twist.angular.z;
+  local_twist[0]=local_msg.twist.twist.linear.x;
+  local_twist[1]=local_msg.twist.twist.linear.y;
+  local_twist[2]=local_msg.twist.twist.angular.z;
 }
 
 Point ObstacleExtractor::distortionCorrection(sensor_msgs::msg::LaserScan scan_msg, double* twist, double r, double phi){

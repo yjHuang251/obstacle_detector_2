@@ -117,8 +117,8 @@ private:
   rclcpp::Time stamp_;
   rclcpp::Time time_last_marker_published_;
   int num_active_markers_ = 0;
-  double twist[3]={0.0}; // 0: vx, 1: vy, 2: w
-  double prev_twist[3]={0.0};
+  double local_twist[3]={0.0}; // 0: vx, 1: vy, 2: w
+  double prev_scan_twist[3]={0.0};
   std::string base_frame_id_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_{nullptr};
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
