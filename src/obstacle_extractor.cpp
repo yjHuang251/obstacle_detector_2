@@ -228,18 +228,18 @@ Point ObstacleExtractor::distortionCorrection(sensor_msgs::msg::LaserScan scan_m
     double d_theta=c*twist[2]*dt;
 
     Eigen::Matrix3d R;
-    R << cos(phi), sin(phi), 0, -sin(phi), cos(phi), 0, 0, 0, 1;
+    R << cos(d_theta), sin(d_theta), 0, -sin(d_theta), cos(d_theta), 0, 0, 0, 1;
 
     Eigen::Vector3d curr2prev_in_curr_frame;
     curr2prev_in_curr_frame << (-c*twist[0]*dt), (-c*twist[1]*dt), 0;
 
     Eigen::Vector3d prev2scan_in_prev_frame;
-    prev2scan_in_prev_frame<<(r*cos(phi)), r*sin(phi), 0;
+    prev2scan_in_prev_frame << (r*cos(phi)), r*sin(phi), 0;
     
     Eigen::Vector3d curr2scan_in_curr_frame;
-    curr2scan_in_curr_frame=curr2prev_in_curr_frame+R*prev2scan_in_prev_frame;
+    curr2scan_in_curr_frame = curr2prev_in_curr_frame + R*prev2scan_in_prev_frame;
     
-    return curr2scan_in_curr_frame(0), curr2scan_in_curr_frame(1);
+    return Point(curr2scan_in_curr_frame(0), curr2scan_in_curr_frame(1));
 }
 
 void ObstacleExtractor::processPoints() {
