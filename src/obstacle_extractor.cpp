@@ -241,7 +241,8 @@ Point ObstacleExtractor::distortionCorrection(sensor_msgs::msg::LaserScan scan_m
   double dt=scan_msg.scan_time;
   double c=1-abs((phi-scan_msg.angle_min)/(scan_msg.angle_max-scan_msg.angle_min));
 
-  double d_theta=c*twist[2]*dt;
+  double tau = -0.02;
+  double d_theta=twist[2]*(c*dt+tau);
 
   Eigen::Matrix2d R;
   R << cos(d_theta), -sin(d_theta), sin(d_theta), cos(d_theta);
