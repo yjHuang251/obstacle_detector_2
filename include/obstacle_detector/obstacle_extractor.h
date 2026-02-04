@@ -112,7 +112,7 @@ private:
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud>::SharedPtr pcl_sub_;
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pcl2_sub_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr local_filter_sub;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr local_pose_sub;
   rclcpp::Publisher<obstacle_detector::msg::Obstacles>::SharedPtr obstacles_pub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr obstacles_vis_pcl_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr obstacles_pose_array_pub_;

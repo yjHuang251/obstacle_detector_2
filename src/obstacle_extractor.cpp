@@ -137,8 +137,8 @@ void ObstacleExtractor::updateParamsUtil(){
         pcl2_sub_ = nh_->create_subscription<sensor_msgs::msg::PointCloud2>(
             "pcl2", 10, std::bind(&ObstacleExtractor::pcl2Callback, this, std::placeholders::_1));
       }
-      local_filter_sub = nh_->create_subscription<nav_msgs::msg::Odometry>(
-        "local_filter", 10, std::bind(&ObstacleExtractor::localCallback, this, std::placeholders::_1));
+      local_pose_sub_ = nh_->create_subscription<nav_msgs::msg::Odometry>(
+        "local_pose", 10, std::bind(&ObstacleExtractor::localCallback, this, std::placeholders::_1));
 
       obstacles_pub_ = nh_->create_publisher<obstacle_detector::msg::Obstacles>("raw_obstacles", 10);
       obstacles_vis_pcl_pub_ = nh_->create_publisher<sensor_msgs::msg::PointCloud2>("raw_obstacles_visualization_pcl", 10);
