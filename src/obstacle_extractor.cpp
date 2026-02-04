@@ -238,16 +238,17 @@ void ObstacleExtractor::localCallback(const nav_msgs::msg::Odometry& local_msg){
 }
 
 Point ObstacleExtractor::distortionCorrection(sensor_msgs::msg::LaserScan scan_msg, double* twist, double r, double phi){
-  double dt=scan_msg.scan_time;
-  double c=1-abs((phi-scan_msg.angle_min)/(scan_msg.angle_max-scan_msg.angle_min));
+  double dt = scan_msg.scan_time;
+  double c = 1 - abs((phi - scan_msg.angle_min) / (scan_msg.angle_max - scan_msg.angle_min));
 
-  double d_theta=c*twist[2]*dt;
+  double tau = -0.02;
+  double d_theta = twist[2] * (c * dt + tau);
 
   Eigen::Matrix2d R;
   R << cos(d_theta), -sin(d_theta), sin(d_theta), cos(d_theta);
 
-  Eigen::Vector2d curr2prev_in_curr_frame;
-  curr2prev_in_curr_frame << (-c*twist[0]*dt), (-c*twist[1]*dt);
+  // Eigen::Vector2d curr2prev_in_curr_frame;
+  // curr2prev_in_curr_frame << (-c*twist[0]*dt), (-c*twist[1]*dt);
 
   Eigen::Vector2d prev2scan_in_prev_frame;
   prev2scan_in_prev_frame << (r*cos(phi)), r*sin(phi);
