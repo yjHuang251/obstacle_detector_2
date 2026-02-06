@@ -115,7 +115,7 @@ void ObstacleExtractor::updateParamsUtil(){
   nh_->get_parameter_or("min_y_limit", p_min_y_limit_, -10.0);
   nh_->get_parameter_or("max_y_limit", p_max_y_limit_,  10.0);
   nh_->get_parameter_or("frame_id", p_frame_id_, std::string{"map"});
-  nh_->get_parameter_or("max_range", p_max_range_, 3.6);
+  nh_->get_parameter_or("max_range", p_max_range_, 4.0);
 
   nh_->get_parameter_or("pose_array", p_pose_array_, false);
 
